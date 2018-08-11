@@ -79,7 +79,7 @@ app.post('/register', (req, res) => {
             joined: new Date()
           })
           .then(result => {
-            res.json(result);
+            res.json(result[0]);
           })
 
       })
