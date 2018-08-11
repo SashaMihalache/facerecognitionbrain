@@ -70,14 +70,14 @@ app.post('/register', (req, res) => {
 
 app.put('/image', (req, res) => {
   const { id } = req.body;
-  const foundUser = findUser(id);
-  if (foundUser) {
-    foundUser.entries++;
-    return res.json(foundUser.entries);
-  } else {
-    res.status(404).json('user not found');
-  }
-
+  db('users')
+    .where('id', '=', id)
+    .increment('entries', 1)
+    .returning('entries')
+    .then(entries => {
+      res.json(entries[0]);
+    })
+    .catch(err => req.status(400).json('unable to get entries'))
 })
 
 app.listen(5000, () => {
