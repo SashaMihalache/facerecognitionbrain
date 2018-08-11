@@ -3,6 +3,19 @@ const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt-nodejs');
 const cors = require('cors');
 const app = express();
+const knex = require('knex');
+
+const db = knex({
+  client: 'pg',
+  connection: {
+    host: '127.0.0.1',
+    user: '',
+    password: '',
+    database: 'smartbrain'
+  }
+});
+
+console.log(db.select('*').from('users'));
 
 app.use(bodyParser.json());
 app.use(cors());
