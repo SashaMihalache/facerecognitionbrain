@@ -31,12 +31,14 @@ app.get('/profile/:id', (req, res) => {
 })
 
 app.post('/signin', (req, res) => {
-  bcrypt.compare('cookies', '$2a$10$JLqzE.hvNi4faI.4sTTR6OF5N8kK7gGTQyCgCQMys5mRo8YQjdXNq', (err, result) => {
-    console.log(result);
-  })
+  // bcrypt.compare('cookies', '$2a$10$JLqzE.hvNi4faI.4sTTR6OF5N8kK7gGTQyCgCQMys5mRo8YQjdXNq', (err, result) => {
+  //   console.log(result);
+  // })
+  const { email, password } = req.body;
+  const foundUserIndex = database.users.findIndex(user => user.email === email && user.password === password)
 
-  if (req.body.email === database.users[1].email && req.body.password === database.users[1].password) {
-    res.json('success');
+  if (foundUserIndex > -1) {
+    res.json(database.users[foundUserIndex]);
   } else {
     res.status(400).json('error logging in');
   }
@@ -53,9 +55,6 @@ app.post('/register', (req, res) => {
     joined: new Date()
   });
   res.json(database.users[database.users.length - 1]);
-  // bcrypt.hash(password, null, null, (err, hash) => {
-  //   console.log(hash);
-  // })
 })
 
 app.put('/image', (req, res) => {
