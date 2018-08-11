@@ -15,8 +15,6 @@ const db = knex({
   }
 });
 
-console.log(db.select('*').from('users'));
-
 app.use(bodyParser.json());
 app.use(cors());
 
@@ -59,15 +57,19 @@ app.post('/signin', (req, res) => {
 
 app.post('/register', (req, res) => {
   const { email, name, password } = req.body;
-  database.users.push({
-    id: 125,
-    name,
-    email,
-    password,
-    entries: 0,
-    joined: new Date()
-  });
-  res.json(database.users[database.users.length - 1]);
+  db('users')
+    .returning('*')
+    .insert({
+      email,
+      name,
+      joined: new Date()
+    })
+    .then(result => {
+      res.json(result);
+    })
+    .catch(err => {
+      res.status(400).json('Error registering user');
+    })
 })
 
 app.put('/image', (req, res) => {
