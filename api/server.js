@@ -30,6 +30,8 @@ app.post('/register', (req, res) => authCtrl.handleRegister(req, res, db, bcrypt
 app.put('/image', (req, res) => imageCtrl.handleEdit(req, res, db));
 app.post('/imageURL', (req, res) => imageCtrl.handleApiCall(req, res));
 
-app.listen(5000, () => {
-  console.log('Listening on port 5000...');
-})
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}...`);
+});
