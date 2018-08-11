@@ -18,28 +18,24 @@ const db = knex({
 app.use(bodyParser.json());
 app.use(cors());
 
-const database = {
-  users: [
-    { id: 1, name: 'john', email: 'john@gmail.com', password: 'cookies', entries: 0, joined: new Date() },
-    { id: 2, name: 'sasha', email: 'sasha@gmail.com', password: 'cookies', entries: 2, joined: new Date() },
-  ]
-};
-
-const findUser = (id) => database.users.find(user => user.id === parseInt(id));
-
 app.get('/', (req, res) => {
   res.json(database.users);
 });
 
 app.get('/profile/:id', (req, res) => {
   const { id } = req.params;
-  const foundUser = findUser(id);
-  if (foundUser) {
-    res.json(foundUser);
-  } else {
-    res.status(404).json('user not found');
-  }
-})
+  db.select('*')
+    .from('users')
+    .where({ id })
+    .then(user => {
+      if (user.length) {
+        res.json(user[0]);
+      } else {
+        res.status(400).json('Could not sign in user')
+      }
+    })
+    .catch(err => res.status(400).json('Error getting the user'));
+});
 
 app.post('/signin', (req, res) => {
   // bcrypt.compare('cookies', '$2a$10$JLqzE.hvNi4faI.4sTTR6OF5N8kK7gGTQyCgCQMys5mRo8YQjdXNq', (err, result) => {
