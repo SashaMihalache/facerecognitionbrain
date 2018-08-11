@@ -38,34 +38,58 @@ app.get('/profile/:id', (req, res) => {
 });
 
 app.post('/signin', (req, res) => {
-  // bcrypt.compare('cookies', '$2a$10$JLqzE.hvNi4faI.4sTTR6OF5N8kK7gGTQyCgCQMys5mRo8YQjdXNq', (err, result) => {
-  //   console.log(result);
-  // })
-  const { email, password } = req.body;
-  const foundUserIndex = database.users.findIndex(user => user.email === email && user.password === password)
+  const { password, email } = req.body;
 
-  if (foundUserIndex > -1) {
-    res.json(database.users[foundUserIndex]);
-  } else {
-    res.status(400).json('error logging in');
-  }
+  db.select('email', 'hash').from('login')
+    .where('email', '=', email)
+    .then(data => {
+      const isMatching = bcrypt.compareSync(password, data[0].hash);
+      if (isMatching) {
+        return db.select('*')
+          .from('users')
+          .where('email', '=', email)
+          .then(user => {
+            res.json(user[0]);
+          })
+          .catch(err => res.status(400).json('unable to get user'))
+      } else {
+        res.status(400).json('wrong credentials');
+      }
+    })
+    .catch(err => res.status(400).json('wrong credentials'))
 })
 
 app.post('/register', (req, res) => {
   const { email, name, password } = req.body;
-  db('users')
-    .returning('*')
-    .insert({
-      email,
-      name,
-      joined: new Date()
+  const hash = bcrypt.hashSync(password);
+
+  db.transaction(trx => {
+    trx.insert({
+      hash,
+      email
     })
-    .then(result => {
-      res.json(result);
-    })
+      .into('login')
+      .returning('email')
+      .then(loginEmail => {
+        return trx('users')
+          .returning('*')
+          .insert({
+            email: loginEmail[0],
+            name,
+            joined: new Date()
+          })
+          .then(result => {
+            res.json(result);
+          })
+
+      })
+      .then(trx.commit)
+      .catch(trx.rollback);
+  })
     .catch(err => {
       res.status(400).json('Error registering user');
     })
+
 })
 
 app.put('/image', (req, res) => {
